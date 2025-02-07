@@ -192,6 +192,7 @@ namespace Institute_Management.Controllers
         {
             var courses = await _context.Courses
                 .Include(c => c.Teacher)
+                .ThenInclude(t => t.User)
                 .Select(c => new CourseDTO
                 {
                     CourseId = c.CourseId,
@@ -202,7 +203,15 @@ namespace Institute_Management.Controllers
                     {
                         TeacherId = c.Teacher.TeacherId,
                         UserId = c.Teacher.UserId,
-                        SubjectSpecialization = c.Teacher.SubjectSpecialization
+                        SubjectSpecialization = c.Teacher.SubjectSpecialization,
+                        User = new UserDTO
+                        {
+                            UserId = c.Teacher.User.UserId,
+                            Name = c.Teacher.User.Name,
+                            Email = c.Teacher.User.Email,
+                            Role = c.Teacher.User.Role,
+                            ContactDetails = c.Teacher.User.ContactDetails,
+                        }
                     }
                 })
                 .ToListAsync();
@@ -257,7 +266,7 @@ namespace Institute_Management.Controllers
 
         #endregion
 
-        #region Batch Management
+        #region Batch Management    
 
         // GET: api/admin/batches
         [HttpGet("batches")]
@@ -265,18 +274,33 @@ namespace Institute_Management.Controllers
         {
             var batches = await _context.Batches
                 .Include(b => b.Course)
+                .ThenInclude(c => c.Teacher) // Ensure Teacher is included
+                .ThenInclude(t => t.User) // Include User details inside Teacher
                 .Select(b => new BatchDTO
                 {
                     BatchId = b.BatchId,
                     BatchName = b.BatchName,
                     BatchTiming = b.BatchTiming,
                     BatchType = b.BatchType,
-                    //CourseId = b.CourseId,
                     Course = new CourseDTO
                     {
                         CourseId = b.Course.CourseId,
                         CourseName = b.Course.CourseName,
-                        Description = b.Course.Description
+                        Description = b.Course.Description,
+                        Teacher = new TeacherDTO
+                        {
+                            TeacherId = b.Course.Teacher.TeacherId,
+                            UserId = b.Course.Teacher.UserId,
+                            SubjectSpecialization = b.Course.Teacher.SubjectSpecialization,
+                            User =  new UserDTO
+                            {
+                                UserId = b.Course.Teacher.User.UserId,
+                                Name = b.Course.Teacher.User.Name,
+                                Email = b.Course.Teacher.User.Email,
+                                Role = b.Course.Teacher.User.Role,
+                                ContactDetails = b.Course.Teacher.User.ContactDetails
+                            } 
+                        }
                     }
                 })
                 .ToListAsync();
